@@ -1,14 +1,12 @@
+use crossterm::ExecutableCommand;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::style::Stylize;
+use crossterm::terminal::{Clear, ClearType};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use crossterm::{cursor, event, terminal};
 use rand::Rng;
 use std::io::{Write, stdout};
 use std::{thread, time::Duration};
-
-use crossterm::{
-    ExecutableCommand,
-    terminal::{Clear, ClearType},
-};
 
 #[derive(Debug, Clone, Copy)]
 struct Position {
@@ -106,9 +104,9 @@ fn main() {
 
         step(&mut snake);
 
-        if snake.body[0].x >= game.width || snake.body[0].y >= game.height {
-            break; // Game over if snake goes out of bounds
-        }
+        // if snake.body[0].x >= game.width || snake.body[0].y >= game.height {
+        //     break; // Game over if snake goes out of bounds
+        // }
 
         // if snake.body[1..].iter().any(|segment| segment.x == snake.body[0].x && segment.y == snake.body[0].y) {
         //     break; // Game over if snake collides with itself
@@ -127,17 +125,24 @@ fn main() {
         if let Some(food) = game.food {
             let err = stdout.execute(cursor::MoveTo(food.x, food.y));
             if err.is_ok() {
-                print!("*");
+                print!("{}", "*".red());
             }
         }
         stdout.execute(cursor::MoveTo(0, 0)).unwrap();
-        for segment in &snake.body {
-            let err = stdout.execute(cursor::MoveTo(segment.x, segment.y));
-            if err.is_err() {
-                continue;
+        for (i, segment) in snake.body.iter().enumerate() {
+            stdout
+                .execute(cursor::MoveTo(segment.x, segment.y))
+                .unwrap();
+            if segment.x >= game.width || segment.y >= game.height {
+                continue; // skip segments that are out of bounds
             }
-            print!("█");
+            if i == 0 {
+                print!("{}", "█".yellow());
+            } else {
+                print!("{}", "█".green());
+            }
         }
+        stdout.execute(cursor::MoveTo(0, 0)).unwrap();
 
         stdout.flush().unwrap();
         let delay = if input.speed_boost {
