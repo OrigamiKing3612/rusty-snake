@@ -1,5 +1,6 @@
 use crossterm::ExecutableCommand;
-use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::KeyEvent;
+use crossterm::event::{Event, KeyCode};
 use crossterm::style::Stylize;
 use crossterm::terminal::{Clear, ClearType};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
@@ -22,7 +23,7 @@ struct Snake {
 #[derive(Debug, Clone, Copy)]
 enum Speed {
     Medium = 100,
-    Fast = 250,
+    Fast = 50,
 }
 
 impl Speed {
@@ -51,7 +52,7 @@ enum Action {
 struct Game {
     width: u16,
     height: u16,
-    food: Option<Position>,
+    food: Vec<Position>,
 }
 
 struct InputState {
@@ -71,7 +72,7 @@ fn main() {
     let mut game = Game {
         width,
         height,
-        food: None,
+        food: vec![],
     };
 
     let mut snake = Snake {
@@ -81,21 +82,23 @@ fn main() {
             y: height / 2,
         }],
     };
-    let mut input = InputState { speed_boost: false };
 
-    game.food = Some(make_food(&game));
+    let max_food = game.width / 10 * 2;
+
+    game.food = (0..max_food).map(|_| make_food(&game, &snake)).collect();
+
+    let mut input = InputState { speed_boost: false };
 
     loop {
         if event::poll(Duration::from_millis(0)).unwrap() {
             if let Event::Key(key_event) = event::read().unwrap() {
-                input.speed_boost = key_event.modifiers.contains(KeyModifiers::SHIFT);
                 if let Some(action) = key_to_action(key_event) {
                     match action {
                         Action::Up => snake.direction = Direction::Up,
                         Action::Down => snake.direction = Direction::Down,
                         Action::Left => snake.direction = Direction::Left,
                         Action::Right => snake.direction = Direction::Right,
-                        Action::SpeedBoost => input.speed_boost = true,
+                        Action::SpeedBoost => input.speed_boost = !input.speed_boost,
                         Action::Quit => break,
                     }
                 }
@@ -112,21 +115,24 @@ fn main() {
         //     break; // Game over if snake collides with itself
         // }
 
-        if let Some(food) = game.food {
-            if snake.body[0].x == food.x && snake.body[0].y == food.y {
-                snake.body.push(snake.body[snake.body.len() - 1]);
-                game.food = Some(make_food(&game));
-            }
+        if let Some(index) = game
+            .food
+            .iter()
+            .position(|food| food.x == snake.body[0].x && food.y == snake.body[0].y)
+        {
+            let tail = *snake.body.last().unwrap();
+            snake.body.push(tail);
+            game.food.remove(index);
+            game.food.push(make_food(&game, &snake));
         }
 
         stdout.execute(Clear(ClearType::All)).unwrap();
         stdout.execute(cursor::MoveTo(0, 0)).unwrap();
 
-        if let Some(food) = game.food {
-            let err = stdout.execute(cursor::MoveTo(food.x, food.y));
-            if err.is_ok() {
-                print!("{}", "*".red());
-            }
+        for food in &game.food {
+            stdout.execute(cursor::MoveTo(food.x, food.y)).unwrap();
+
+            print!("{}", "*".red());
         }
         stdout.execute(cursor::MoveTo(0, 0)).unwrap();
         for (i, segment) in snake.body.iter().enumerate() {
@@ -209,17 +215,18 @@ fn step(snake: &mut Snake) {
     snake.body.pop(); // keeps same length for now
 }
 
-fn make_food(game: &Game) -> Position {
+fn make_food(game: &Game, snake: &Snake) -> Position {
     let mut rng = rand::rng();
 
-    let x = rng.random_range(0..game.width);
-    let y = rng.random_range(0..game.height);
+    loop {
+        let x = rng.random_range(0..game.width);
+        let y = rng.random_range(0..game.height);
 
-    if let Some(food) = game.food {
-        if food.x == x && food.y == y {
-            return make_food(game); // avoid placing food on top of existing food
+        let pos = Position { x, y };
+        let on_snake = snake.body.iter().any(|p| p.x == x && p.y == y);
+        let on_food = game.food.iter().any(|f| f.x == x && f.y == y);
+        if !on_snake && !on_food {
+            return pos;
         }
     }
-
-    return Position { x, y };
 }
