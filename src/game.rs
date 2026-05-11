@@ -11,7 +11,6 @@ pub struct Game {
     pub food: Vec<Position>,
     pub max_food: u16,
     pub score: u32,
-    pub game_over: bool,
 }
 
 const MAX_GAME_WINDOW: u16 = 3;
@@ -25,7 +24,6 @@ impl Game {
             game_height: height - MAX_GAME_WINDOW,
             food: Vec::new(),
             score: 0,
-            game_over: false,
             max_food: max_food,
         };
         while game.food.len() < max_food as usize {
