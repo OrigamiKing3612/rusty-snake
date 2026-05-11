@@ -1,63 +1,20 @@
+mod game;
+mod input;
+mod snake;
+mod types;
+
 use crossterm::ExecutableCommand;
-use crossterm::event::KeyEvent;
-use crossterm::event::{Event, KeyCode};
+use crossterm::event::Event;
 use crossterm::style::Stylize;
 use crossterm::terminal::{Clear, ClearType};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use crossterm::{cursor, event, terminal};
-use rand::Rng;
 use std::io::{Write, stdout};
 use std::{thread, time::Duration};
 
-#[derive(Debug, Clone, Copy)]
-struct Position {
-    x: u16,
-    y: u16,
-}
-
-struct Snake {
-    direction: Direction,
-    body: Vec<Position>,
-}
-
-#[derive(Debug, Clone, Copy)]
-enum Speed {
-    Medium = 100,
-    Fast = 50,
-}
-
-impl Speed {
-    fn ms(self) -> u64 {
-        self as u64
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-enum Direction {
-    Up = 0,
-    Down = 1,
-    Left = 2,
-    Right = 3,
-}
-
-enum Action {
-    Up,
-    Down,
-    Left,
-    Right,
-    Quit,
-    SpeedBoost,
-}
-
-struct Game {
-    width: u16,
-    height: u16,
-    food: Vec<Position>,
-}
-
-struct InputState {
-    speed_boost: bool,
-}
+use crate::game::Game;
+use crate::snake::Snake;
+use crate::types::{Action, Direction, InputState, Position, Speed};
 
 fn main() {
     let result = enable_raw_mode();
@@ -83,16 +40,16 @@ fn main() {
         }],
     };
 
-    let max_food = game.width / 10 * 2;
+    let max_food = game.width / 10 * 2 * 20;
 
-    game.food = (0..max_food).map(|_| make_food(&game, &snake)).collect();
+    game.food = (0..max_food).map(|_| game.make_food(&snake)).collect();
 
     let mut input = InputState { speed_boost: false };
 
     loop {
         if event::poll(Duration::from_millis(0)).unwrap() {
             if let Event::Key(key_event) = event::read().unwrap() {
-                if let Some(action) = key_to_action(key_event) {
+                if let Some(action) = input::key_to_action(key_event) {
                     match action {
                         Action::Up => snake.direction = Direction::Up,
                         Action::Down => snake.direction = Direction::Down,
@@ -105,7 +62,7 @@ fn main() {
             }
         }
 
-        step(&mut snake);
+        snake.step();
 
         // if snake.body[0].x >= game.width || snake.body[0].y >= game.height {
         //     break; // Game over if snake goes out of bounds
@@ -123,7 +80,8 @@ fn main() {
             let tail = *snake.body.last().unwrap();
             snake.body.push(tail);
             game.food.remove(index);
-            game.food.push(make_food(&game, &snake));
+            let new_food = game.make_food(&snake);
+            game.food.push(new_food);
         }
 
         stdout.execute(Clear(ClearType::All)).unwrap();
@@ -135,20 +93,8 @@ fn main() {
             print!("{}", "*".red());
         }
         stdout.execute(cursor::MoveTo(0, 0)).unwrap();
-        for (i, segment) in snake.body.iter().enumerate() {
-            stdout
-                .execute(cursor::MoveTo(segment.x, segment.y))
-                .unwrap();
-            if segment.x >= game.width || segment.y >= game.height {
-                continue; // skip segments that are out of bounds
-            }
-            if i == 0 {
-                print!("{}", "█".yellow());
-            } else {
-                print!("{}", "█".green());
-            }
-        }
-        stdout.execute(cursor::MoveTo(0, 0)).unwrap();
+
+        snake.draw(&game);
 
         stdout.flush().unwrap();
         let delay = if input.speed_boost {
@@ -162,71 +108,5 @@ fn main() {
     let result = disable_raw_mode();
     if result.is_err() {
         eprintln!("Failed to disable raw mode: {:?}", result);
-    }
-}
-
-fn key_to_action(key: KeyEvent) -> Option<Action> {
-    match (key.code, key.modifiers) {
-        (KeyCode::Char('w'), _) => Some(Action::Up),
-        (KeyCode::Up, _) => Some(Action::Up),
-        (KeyCode::Char('k'), _) => Some(Action::Up),
-
-        (KeyCode::Char('a'), _) => Some(Action::Left),
-        (KeyCode::Left, _) => Some(Action::Left),
-        (KeyCode::Char('h'), _) => Some(Action::Left),
-
-        (KeyCode::Char('s'), _) => Some(Action::Down),
-        (KeyCode::Down, _) => Some(Action::Down),
-        (KeyCode::Char('j'), _) => Some(Action::Down),
-
-        (KeyCode::Char('d'), _) => Some(Action::Right),
-        (KeyCode::Right, _) => Some(Action::Right),
-        (KeyCode::Char('l'), _) => Some(Action::Right),
-
-        (KeyCode::Char('q'), _) => Some(Action::Quit),
-        (KeyCode::Esc, _) => Some(Action::Quit),
-        (KeyCode::Char(' '), _) => Some(Action::SpeedBoost),
-        _ => None,
-    }
-}
-
-fn step(snake: &mut Snake) {
-    let head = snake.body[0].clone();
-    let new_head = match snake.direction {
-        Direction::Up => Position {
-            x: head.x,
-            y: head.y.saturating_sub(1),
-        },
-        Direction::Down => Position {
-            x: head.x,
-            y: head.y + 1,
-        },
-        Direction::Left => Position {
-            x: head.x.saturating_sub(1),
-            y: head.y,
-        },
-        Direction::Right => Position {
-            x: head.x + 1,
-            y: head.y,
-        },
-    };
-
-    snake.body.insert(0, new_head);
-    snake.body.pop(); // keeps same length for now
-}
-
-fn make_food(game: &Game, snake: &Snake) -> Position {
-    let mut rng = rand::rng();
-
-    loop {
-        let x = rng.random_range(0..game.width);
-        let y = rng.random_range(0..game.height);
-
-        let pos = Position { x, y };
-        let on_snake = snake.body.iter().any(|p| p.x == x && p.y == y);
-        let on_food = game.food.iter().any(|f| f.x == x && f.y == y);
-        if !on_snake && !on_food {
-            return pos;
-        }
     }
 }
