@@ -7,3 +7,4 @@ edition = "2024"
 crossterm = "0.29"
 rand = "0.9"
 shared = { path = "../shared" }
+bincode = "1"

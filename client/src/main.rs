@@ -2,6 +2,7 @@ mod food;
 mod game;
 mod input;
 mod menu;
+mod multiplayer;
 mod snake;
 mod types;
 
@@ -10,6 +11,7 @@ use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use shared::Position;
 
 use crate::game::game::Game;
+use crate::menu::types::MenuOption;
 use crate::snake::snake::Snake;
 
 fn main() {
@@ -29,11 +31,16 @@ fn main() {
 
     let option = menu::menu::draw_main_menu(&mut game);
     match option {
-        menu::types::MenuOption::StartGame => {
+        MenuOption::StartGame => {
             game.game_loop(&mut snake);
         }
-        menu::types::MenuOption::Settings => {}
-        menu::types::MenuOption::Quit => {
+        MenuOption::JoinGame => {
+            game.multiplayer = true;
+            multiplayer::multiplayer::connect();
+            game.game_loop(&mut snake);
+        }
+        MenuOption::Settings => {}
+        MenuOption::Quit => {
             quit();
             return;
         }

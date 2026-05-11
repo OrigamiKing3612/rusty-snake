@@ -5,4 +5,5 @@ edition = "2024"
 
 [dependencies]
 shared = { path = "../shared" }
+bincode = "1"
 rand = "0.9"
