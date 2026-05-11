@@ -11,7 +11,7 @@ use crossterm::{ExecutableCommand, cursor, event};
 use crate::game::game::Game;
 use crate::snake::snake::Snake;
 use crate::types::{Action, InputState, Speed};
-use crate::{food, input};
+use crate::{food, input, menu};
 use shared::Direction;
 
 impl Game {
@@ -55,7 +55,10 @@ impl Game {
             snake.step();
 
             if snake.body[0].x >= self.width || snake.body[0].y >= self.game_height {
-                println!("Game Over! Final Score: {}", self.score);
+                menu::game_over::draw_game_over(
+                    self,
+                    "Game Over! Press any key to return to menu.",
+                );
                 break; // Game over if snake goes out of bounds
             }
 
@@ -63,7 +66,13 @@ impl Game {
                 .iter()
                 .any(|segment| segment.x == snake.body[0].x && segment.y == snake.body[0].y)
             {
-                println!("Game Over! Final Score: {}", self.score);
+                menu::game_over::draw_game_over(
+                    self,
+                    &format!(
+                        "Game Over! Final Score: {}. Press any key to return to menu.",
+                        self.score
+                    ),
+                );
                 break; // Game over if snake collides with itself
             }
 
