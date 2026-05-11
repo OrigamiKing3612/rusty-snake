@@ -40,10 +40,26 @@ fn main() {
             if let Event::Key(key_event) = event::read().unwrap() {
                 if let Some(action) = input::key_to_action(key_event) {
                     match action {
-                        Action::Up => snake.direction = Direction::Up,
-                        Action::Down => snake.direction = Direction::Down,
-                        Action::Left => snake.direction = Direction::Left,
-                        Action::Right => snake.direction = Direction::Right,
+                        Action::Up => {
+                            if snake.direction != Direction::Down {
+                                snake.direction = Direction::Up
+                            }
+                        }
+                        Action::Down => {
+                            if snake.direction != Direction::Up {
+                                snake.direction = Direction::Down
+                            }
+                        }
+                        Action::Left => {
+                            if snake.direction != Direction::Right {
+                                snake.direction = Direction::Left
+                            }
+                        }
+                        Action::Right => {
+                            if snake.direction != Direction::Left {
+                                snake.direction = Direction::Right
+                            }
+                        }
                         Action::SpeedBoost => input.speed_boost = !input.speed_boost,
                         Action::Quit => break,
                     }
@@ -54,13 +70,18 @@ fn main() {
         food::check_food(&mut game);
         snake.step();
 
-        // if snake.body[0].x >= game.width || snake.body[0].y >= game.game_height {
-        //     break; // Game over if snake goes out of bounds
-        // }
+        if snake.body[0].x >= game.width || snake.body[0].y >= game.game_height {
+            println!("Game Over! Final Score: {}", game.score);
+            break; // Game over if snake goes out of bounds
+        }
 
-        // if snake.body[1..].iter().any(|segment| segment.x == snake.body[0].x && segment.y == snake.body[0].y) {
-        //     break; // Game over if snake collides with itself
-        // }
+        if snake.body[1..]
+            .iter()
+            .any(|segment| segment.x == snake.body[0].x && segment.y == snake.body[0].y)
+        {
+            println!("Game Over! Final Score: {}", game.score);
+            break; // Game over if snake collides with itself
+        }
 
         if let Some(index) = game
             .food

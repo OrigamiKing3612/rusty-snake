@@ -16,7 +16,7 @@ impl Speed {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Direction {
     Up = 0,
     Down = 1,
