@@ -1,6 +1,7 @@
 mod food;
 mod game;
 mod input;
+mod menu;
 mod snake;
 mod types;
 
@@ -26,8 +27,22 @@ fn main() {
         y: height / 2,
     });
 
-    game.game_loop(&mut snake);
+    let option = menu::menu::draw_main_menu(&mut game);
+    match option {
+        menu::types::MenuOption::StartGame => {
+            game.game_loop(&mut snake);
+        }
+        menu::types::MenuOption::Settings => {}
+        menu::types::MenuOption::Quit => {
+            quit();
+            return;
+        }
+    }
 
+    quit();
+}
+
+fn quit() {
     let result = disable_raw_mode();
     if result.is_err() {
         eprintln!("Failed to disable raw mode: {:?}", result);
