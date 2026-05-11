@@ -40,7 +40,7 @@ fn main() {
         }],
     };
 
-    let max_food = game.width / 10 * 2 * 20;
+    let max_food = game.width / 10 * 2;
 
     game.food = (0..max_food).map(|_| game.make_food(&snake)).collect();
 
