@@ -4,7 +4,7 @@ use crossterm::{ExecutableCommand, cursor};
 
 use crate::{food::make_food, types::Position};
 
-pub struct Game {
+pub(crate) struct Game {
     pub width: u16,
     pub height: u16,
     pub game_height: u16,

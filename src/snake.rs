@@ -3,7 +3,7 @@ use std::io::stdout;
 use crossterm::{ExecutableCommand, cursor, style::Stylize};
 
 use crate::{
-    game::Game,
+    game::game::Game,
     types::{Direction, Position},
 };
 

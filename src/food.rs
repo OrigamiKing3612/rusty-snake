@@ -3,7 +3,7 @@ use std::io::stdout;
 use crossterm::{ExecutableCommand, cursor, style::Stylize};
 use rand::Rng;
 
-use crate::{game::Game, types::Position};
+use crate::{game::game::Game, types::Position};
 
 pub fn make_food(game: &Game) -> Position {
     let mut rng = rand::rng();
