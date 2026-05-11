@@ -2,7 +2,8 @@ use std::io::stdout;
 
 use crossterm::{ExecutableCommand, cursor};
 
-use crate::{food::make_food, types::Position};
+use crate::food::make_food;
+use shared::Position;
 
 pub(crate) struct Game {
     pub width: u16,

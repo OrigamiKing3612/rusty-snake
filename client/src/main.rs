@@ -6,10 +6,10 @@ mod types;
 
 use crossterm::terminal;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+use shared::Position;
 
 use crate::game::game::Game;
-use crate::snake::Snake;
-use crate::types::Position;
+use crate::snake::snake::Snake;
 
 fn main() {
     let result = enable_raw_mode();

@@ -1,15 +1,18 @@
-use std::io::{Write, stdout};
-use std::thread;
 use std::time::Duration;
+use std::{
+    io::{Write, stdout},
+    thread,
+};
 
 use crossterm::event::Event;
 use crossterm::terminal::{Clear, ClearType};
 use crossterm::{ExecutableCommand, cursor, event};
 
 use crate::game::game::Game;
-use crate::snake::Snake;
-use crate::types::{Action, Direction, InputState, Speed};
+use crate::snake::snake::Snake;
+use crate::types::{Action, InputState, Speed};
 use crate::{food, input};
+use shared::Direction;
 
 impl Game {
     pub fn game_loop(&mut self, snake: &mut Snake) {

@@ -2,8 +2,9 @@ use std::io::stdout;
 
 use crossterm::{ExecutableCommand, cursor, style::Stylize};
 use rand::Rng;
+use shared::Position;
 
-use crate::{game::game::Game, types::Position};
+use crate::game::game::Game;
 
 pub fn make_food(game: &Game) -> Position {
     let mut rng = rand::rng();
@@ -19,6 +20,7 @@ pub fn make_food(game: &Game) -> Position {
         }
     }
 }
+
 pub fn check_food(game: &mut Game) {
     while game.food.len() < game.max_food as usize {
         let food = make_food(&game);

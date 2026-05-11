@@ -1,8 +1,8 @@
-[package]
-name = "snake"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+resolver = "2"
 
-[dependencies]
-crossterm = "0.29"
-rand = "0.9"
+members = [
+    "client",
+    "server",
+    "shared"
+]
