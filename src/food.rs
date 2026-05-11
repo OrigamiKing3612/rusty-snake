@@ -10,7 +10,7 @@ pub fn make_food(game: &Game) -> Position {
 
     loop {
         let x = rng.random_range(0..game.width);
-        let y = rng.random_range(0..game.height);
+        let y = rng.random_range(0..game.game_height);
 
         let pos = Position { x, y };
         let on_food = game.food.iter().any(|f| f.x == x && f.y == y);

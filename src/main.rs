@@ -54,7 +54,7 @@ fn main() {
         food::check_food(&mut game);
         snake.step();
 
-        // if snake.body[0].x >= game.width || snake.body[0].y >= game.height {
+        // if snake.body[0].x >= game.width || snake.body[0].y >= game.game_height {
         //     break; // Game over if snake goes out of bounds
         // }
 
@@ -72,6 +72,7 @@ fn main() {
             game.food.remove(index);
             let new_food = food::make_food(&game);
             game.add_food(new_food);
+            game.increment_score();
         }
 
         stdout.execute(Clear(ClearType::All)).unwrap();
@@ -80,6 +81,8 @@ fn main() {
         food::draw(&game);
 
         snake.draw(&game);
+        game.draw_window();
+        game.draw_score();
 
         stdout.flush().unwrap();
         let delay = if input.speed_boost {
