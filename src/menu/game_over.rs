@@ -10,13 +10,7 @@ use crossterm::{
     style::{Attribute, PrintStyledContent, Stylize},
 };
 
-use crate::{
-    game::game::Game,
-    menu::{
-        menu::{Action, draw_window},
-        types::MenuOption,
-    },
-};
+use crate::{game::game::Game, menu::menu::draw_window};
 
 pub fn draw_game_over(game: &mut Game, message: &str) {
     draw_window(game);

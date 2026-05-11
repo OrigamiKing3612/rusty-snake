@@ -1,8 +1,8 @@
-[workspace]
-resolver = "2"
+[package]
+name = "rusty-snake"
+version = "0.1.0"
+edition = "2024"
 
-members = [
-    "client",
-    "server",
-    "shared"
-]
+[dependencies]
+crossterm = "0.29"
+rand = "0.9"

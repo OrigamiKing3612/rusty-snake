@@ -2,8 +2,10 @@ use std::io::stdout;
 
 use crossterm::{ExecutableCommand, cursor, style::Stylize};
 
-use crate::game::game::Game;
-use shared::{Direction, Position};
+use crate::{
+    game::game::Game,
+    types::{Direction, Position},
+};
 
 pub(crate) struct Snake {
     pub direction: Direction,

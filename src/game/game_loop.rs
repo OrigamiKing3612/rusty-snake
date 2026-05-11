@@ -10,9 +10,8 @@ use crossterm::{ExecutableCommand, cursor, event};
 
 use crate::game::game::Game;
 use crate::snake::snake::Snake;
-use crate::types::{Action, InputState, Speed};
+use crate::types::{Action, Direction, InputState, Speed};
 use crate::{food, input, menu};
-use shared::Direction;
 
 impl Game {
     pub fn game_loop(&mut self, snake: &mut Snake) {
