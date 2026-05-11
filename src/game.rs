@@ -1,27 +1,32 @@
-use rand::Rng;
-
-use crate::{snake::Snake, types::Position};
+use crate::{food::make_food, types::Position};
 
 pub struct Game {
     pub width: u16,
     pub height: u16,
     pub food: Vec<Position>,
+    pub max_food: u16,
+    pub score: u32,
+    pub game_over: bool,
 }
 
 impl Game {
-    pub fn make_food(&mut self, snake: &Snake) -> Position {
-        let mut rng = rand::rng();
-
-        loop {
-            let x = rng.random_range(0..self.width);
-            let y = rng.random_range(0..self.height);
-
-            let pos = Position { x, y };
-            let on_snake = snake.body.iter().any(|p| p.x == x && p.y == y);
-            let on_food = self.food.iter().any(|f| f.x == x && f.y == y);
-            if !on_snake && !on_food {
-                return pos;
-            }
+    pub fn new(width: u16, height: u16) -> Self {
+        let max_food = width / 10 * 2;
+        let mut game = Game {
+            width,
+            height,
+            food: Vec::new(),
+            score: 0,
+            game_over: false,
+            max_food: max_food,
+        };
+        while game.food.len() < max_food as usize {
+            let food = make_food(&game);
+            game.food.push(food);
         }
+        return game;
+    }
+    pub fn add_food(&mut self, pos: Position) {
+        self.food.push(pos);
     }
 }

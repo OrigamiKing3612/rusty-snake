@@ -13,6 +13,12 @@ pub struct Snake {
 }
 
 impl Snake {
+    pub fn new(start_pos: Position) -> Self {
+        Snake {
+            direction: Direction::Up,
+            body: vec![start_pos],
+        }
+    }
     pub fn step(&mut self) {
         let head = self.body[0].clone();
         let new_head = match self.direction {

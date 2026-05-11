@@ -1,3 +1,4 @@
+mod food;
 mod game;
 mod input;
 mod snake;
@@ -5,7 +6,6 @@ mod types;
 
 use crossterm::ExecutableCommand;
 use crossterm::event::Event;
-use crossterm::style::Stylize;
 use crossterm::terminal::{Clear, ClearType};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use crossterm::{cursor, event, terminal};
@@ -26,23 +26,12 @@ fn main() {
     let mut stdout = stdout();
 
     let (width, height) = terminal::size().expect("could not get terminal size");
-    let mut game = Game {
-        width,
-        height,
-        food: vec![],
-    };
+    let mut game = Game::new(width, height);
 
-    let mut snake = Snake {
-        direction: Direction::Up,
-        body: vec![Position {
-            x: width / 2,
-            y: height / 2,
-        }],
-    };
-
-    let max_food = game.width / 10 * 2;
-
-    game.food = (0..max_food).map(|_| game.make_food(&snake)).collect();
+    let mut snake = Snake::new(Position {
+        x: width / 2,
+        y: height / 2,
+    });
 
     let mut input = InputState { speed_boost: false };
 
@@ -62,6 +51,7 @@ fn main() {
             }
         }
 
+        food::check_food(&mut game);
         snake.step();
 
         // if snake.body[0].x >= game.width || snake.body[0].y >= game.height {
@@ -80,19 +70,14 @@ fn main() {
             let tail = *snake.body.last().unwrap();
             snake.body.push(tail);
             game.food.remove(index);
-            let new_food = game.make_food(&snake);
-            game.food.push(new_food);
+            let new_food = food::make_food(&game);
+            game.add_food(new_food);
         }
 
         stdout.execute(Clear(ClearType::All)).unwrap();
         stdout.execute(cursor::MoveTo(0, 0)).unwrap();
 
-        for food in &game.food {
-            stdout.execute(cursor::MoveTo(food.x, food.y)).unwrap();
-
-            print!("{}", "*".red());
-        }
-        stdout.execute(cursor::MoveTo(0, 0)).unwrap();
+        food::draw(&game);
 
         snake.draw(&game);
 
